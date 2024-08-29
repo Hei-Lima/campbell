@@ -1,0 +1,33 @@
+{
+  "name": "campbell",
+  "version": "1.0.0",
+  "description": "Quickly generate VMs for Proxmox",
+  "main": "tailwind.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hei-Lima/campbell.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hei-Lima/campbell/issues"
+  },
+  "homepage": "https://github.com/Hei-Lima/campbell#readme",
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.8",
+    "autoprefixer": "^10.4.20",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.436.0",
+    "postcss": "^8.4.41",
+    "tailwind-merge": "^2.5.2",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.10"
+  }
+}
