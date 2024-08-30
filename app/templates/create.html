@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Create VMs{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumbs text-sm">
+  <ul>
+    <li><a href="{{ url_for('create') }}">Select Node</a></li>
+  </ul>
+</div>
+
+<h1>Criar VMs</h1>
+
+
+<!-- lista nós do Proxmox -->
+
+<form action="{{ url_for('iso') }}" method="post">
+  {% if nodes %}
+  <select name="node_name" class="select w-full max-w-xs">
+    <option disabled selected>Pick Node</option>
+    {% for node in nodes %}
+    <option value="{{ node }}">{{ node }}</option>
+    {% endfor %}
+  </select>
+  {% endif %}
+
+  <button type="submit" class="btn btn-primary">Next</button>
+</form>
+
+{% endblock %}

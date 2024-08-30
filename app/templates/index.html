@@ -7,11 +7,29 @@
 <button class="btn btn-primary">Button</button>
 
 {% if vms %}
-    <ul>
+<div class="overflow-x-auto">
+  <table class="table">
+    <!-- head -->
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
     {% for vm in vms %}
-        <li>{{ vm.name }} - {{ vm.status }}</li>
+      <tr>
+        <th>{{ vm.name }}</th>
+        {% if vm.status == "running" %}
+        <td class="text-success">{{ vm.status }}</td>
+        {% else %}
+        <td class="text-warning">{{ vm.status }}</td>
+        {% endif %}
+      </tr>
     {% endfor %}
-    </ul>
+    </tbody>
+  </table>
+</div>
 {% else %}
     <p>No virtual machines found.</p>
 {% endif %}
