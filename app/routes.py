@@ -117,3 +117,8 @@ def create_cloud_init():
     return render_template('createcloudinit.html', form=form, vm_id=vm_id, vm_node=vm_node)
 
 
+# HERO PAGE E LOGINS:
+
+@app.route('hero')
+def hero():
+    return render_template('hero.html')
