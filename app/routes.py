@@ -64,13 +64,6 @@ def check_vm_status(vm_node, vm_id):
     status = get_vm_status(proxmox, vm_node, vm_id)
     return jsonify({'status': status})
 
-def get_vm_status(proxmox, node, vm_id):
-    try:
-        vm = proxmox.nodes(node).qemu(vm_id).status.current.get()
-        return vm['status']
-    except Exception as e:
-        return 'unknown'
-
 @app.route('/convert-to-template', methods=['GET', 'POST'])
 def convert_to_template():
     if request.method == 'POST':
@@ -179,3 +172,23 @@ def create_instance():
 
     return render_template('createinstance.html', form=form)
 
+def configure_cloud_init(proxmox, node, vm_id, username, password, ssh_key, ip_address):
+    try:
+        # Configurar Cloud-Init
+        proxmox.nodes(node).qemu(vm_id).config.set(
+            ciuser=username,
+            cipassword=password,
+            sshkeys=ssh_key,
+            ipconfig0=f"ip={ip_address}/24,gw=192.168.1.1"
+        )
+
+        # Reiniciar a VM para aplicar as configurações do Cloud-Init
+        proxmox.nodes(node).qemu(vm_id).status.reboot.post()
+
+        print(f"Cloud-Init configuration applied to VM ID: {vm_id}")
+        return True
+
+    except Exception as e:
+        print(f"Error configuring Cloud-Init: {str(e)}")
+        # Você pode querer registrar este erro em um sistema de logging
+        raise  # Re-lança a exceção para ser tratada pelo chamador
