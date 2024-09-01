@@ -2,33 +2,26 @@
 {% block title %}Create Cloud-Init Instance{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">Create new Cloud-Init instance:</h1>
-<form method="POST" action="{{ url_for('create_instance') }}">
+<h1>Create Cloud-Init Configuration for VM {{ vm_id }}</h1>
+<form method="POST">
     {{ form.hidden_tag() }}
-    <div class="mb-4">
-        <label for="template" class="block stat-title">{{ form.template.label }}</label>
-        {{ form.template(class="select select-bordered w-full max-w-xs") }}
+    <div>
+        {{ form.username.label }}
+        {{ form.username(class="input input-bordered w-full max-w-xs") }}
     </div>
-    <div class="mb-4">
-        <label for="hostname" class="block stat-title">{{ form.hostname.label }}</label>
-        {{ form.hostname(class="input input-bordered w-full max-w-xs", placeholder="my-instance") }}
-    </div>
-    <div class="mb-4">
-        <label for="username" class="block stat-title">{{ form.username.label }}</label>
-        {{ form.username(class="input input-bordered w-full max-w-xs", placeholder="user") }}
-    </div>
-    <div class="mb-4">
-        <label for="password" class="block stat-title">{{ form.password.label }}</label>
+    <div>
+        {{ form.password.label }}
         {{ form.password(class="input input-bordered w-full max-w-xs") }}
     </div>
-    <div class="mb-4">
-        <label for="ssh_key" class="block stat-title">{{ form.ssh_key.label }}</label>
-        {{ form.ssh_key(class="textarea textarea-bordered w-full max-w-xs", rows="3") }}
+    <div>
+        {{ form.ssh_key.label }}
+        {{ form.ssh_key(class="textarea textarea-bordered w-full max-w-xs", rows=10, cols=40) }}
     </div>
-    <div class="mb-4">
-        <label for="ip_address" class="block stat-title">{{ form.ip_address.label }}</label>
-        {{ form.ip_address(class="input input-bordered w-full max-w-xs", placeholder="192.168.1.100") }}
+    <div>
+        {{ form.ip_address.label }}
+        {{ form.ip_address(class="input input-bordered w-full max-w-xs") }}
     </div>
-    <div class="mb-4">
+    <div>
         {{ form.submit(class="btn btn-primary") }}
     </div>
 </form>

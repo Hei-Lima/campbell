@@ -35,3 +35,10 @@ class TemplateForm(FlaskForm):
     vm_name = StringField('VM Name', validators=[DataRequired()])
     vm_id = IntegerField('VM ID', validators=[DataRequired()])
     submit = SubmitField('Create VM')
+
+class CloudInitInstanceForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    ssh_key = TextAreaField('SSH Key', validators=[DataRequired()])
+    ip_address = StringField('IP Address', validators=[DataRequired()])
+    submit = SubmitField('Create VM')

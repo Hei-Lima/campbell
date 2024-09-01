@@ -1,31 +1,79 @@
 {% extends "base.html" %}
-{% block title %}Criando VM{% endblock %}
+{% block title %}Creating VM{% endblock %}
 {% block content %}
-  <h1>Criando VM...</h1>
-  <p id="status">Inicializando...</p>
+  <h1>Creating VM, please wait...</h1>
+  <span class="loading loading-spinner text-primary"></span><br>
+
+  <p id="status" style="display: none;">Starting...</p>
+  <button class="btn btn-primary" id="startButton" style="display: none;" onclick="startVm()">Iniciar VM</button>
+
+  <div id="buttons" style="display: none;">
+      <button class="btn btn-primary" id="cloudInitButton">Configurar Cloud-Init</button>
+      <button class="btn btn-secondary" id="mainMenuButton">Menu Principal</button>
+  </div>
+  
+  <script>
+      function checkStatus() {
+          fetch('/check_vm_status/{{ vm_node }}/{{ vm_id }}')
+          .then(response => response.json())
+          .then(data => {
+              document.getElementById('status').textContent = 'VM Status: ' + data.status;
+              if (data.status === 'running') {
+                  // VM está pronta, exibe os botões
+                  alert('VM criada com sucesso!');
+                  document.getElementById('status').style.display = 'block';
+                  document.getElementById('buttons').style.display = 'block';
+                  document.getElementById('cloudInitButton').onclick = function() {
+                      window.location.href = '{{ url_for("create_cloud_init", vm_id=vm_id, vm_node=vm_node) }}';
+                  };
+                  document.getElementById('mainMenuButton').onclick = function() {
+                      window.location.href = '/';
+                  };
+              } else {
+                  // Verifica novamente em 5 segundos
+                  setTimeout(checkStatus, 5000);
+              }
+          })
+          .catch(error => {
+              console.error('Erro:', error);
+              document.getElementById('status').textContent = 'Erro ao verificar status';
+              document.getElementById('status').style.display = 'block';
+          });
+      }
+  
+      // Inicia a verificação de status
+      checkStatus();
+  </script>
 
   <script>
-    function checkStatus() {
-      fetch('/check_vm_status/{{ vm_node }}/{{ vm_id }}')
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('status').textContent = 'Status da VM: ' + data.status;
-          if (data.status === 'running') {
-            // VM está pronta, você pode redirecionar ou atualizar a UI
-            alert('VM criada com sucesso!');
-            window.location.href = '/';  // Redireciona para a página inicial
-          } else {
-            // Verifica novamente em 5 segundos
-            setTimeout(checkStatus, 5000);
-          }
-        })
-        .catch(error => {
-          console.error('Erro:', error);
-          document.getElementById('status').textContent = 'Erro ao verificar status';
-        });
-    }
-
-    // Inicia a verificação de status
-    checkStatus();
+      function startVm() {
+          fetch('/start_vm/{{ vm_node }}/{{ vm_id }}')
+          .then(response => response.json())
+          .then(data => {
+              document.getElementById('status').textContent = 'Status da VM: ' + data.status;
+              if (data.status === 'running') {
+                  // VM está pronta, você pode redirecionar ou atualizar a UI
+                  alert('VM criada com sucesso!');
+                  window.location.href = '/';
+              } else {
+                  // Verifica novamente em 5 segundos
+                  setTimeout(checkStatus, 5000);
+              }
+          })
+          .catch(error => {
+              console.error('Erro:', error);
+              document.getElementById('status').textContent = 'Erro ao verificar status';
+          });
+      }
+    
+      function showElements() {
+          setTimeout(() => {
+              document.getElementById('status').style.display = 'block';
+              document.getElementById('startButton').style.display = 'inline-block';
+          }, 15000); // Atraso de 15 segundos
+      }
+    
+      document.addEventListener('DOMContentLoaded', showElements);
   </script>
+
 {% endblock %}

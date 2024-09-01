@@ -2,6 +2,7 @@ from flask import render_template, url_for, request, jsonify, flash, redirect, c
 from app.utils import *
 from app.forms import TemplateForm, CloudInitInstanceForm
 import os, json, subprocess
+import urllib.parse
 
 proxmox = connect_to_proxmox()
 
@@ -64,6 +65,11 @@ def check_vm_status(vm_node, vm_id):
     status = get_vm_status(proxmox, vm_node, vm_id)
     return jsonify({'status': status})
 
+@app.route('/start_vm/<vm_node>/<vm_id>')
+def start_vm_route(vm_node, vm_id):
+    start_vm(proxmox, vm_node, vm_id)
+    return redirect(url_for('index'))
+
 @app.route('/convert-to-template', methods=['GET', 'POST'])
 def convert_to_template():
     if request.method == 'POST':
@@ -87,108 +93,27 @@ def convert_to_template():
     vms = list_vms_node(proxmox)
     return render_template('convert_to_template.html', vms=vms)
 
-
-# @app.route('/template', methods=['GET', 'POST'])
-# def template():
-#     form = VMTemplateForm()
-#     if form.validate_on_submit():
-#         form_data = {
-#             'template_name': form.template_name.data,
-#             'cpu_cores': form.cpu_cores.data,
-#             'memory': form.memory.data,
-#             'disk_size': form.disk_size.data,
-#             'network_adapter': form.network_adapter.data,
-#             'os_type': form.os_type.data
-#         }
-        
-#         json_file_path = app.config['JSON_FILE_PATH']
-#         if os.path.exists(json_file_path):
-#             try:
-#                 with open(json_file_path, 'r') as file:
-#                     data = json.load(file)
-#             except json.JSONDecodeError:
-#                 data = {"templates": []}
-#         else:
-#             data = {"templates": []}
-        
-#         data['templates'].append(form_data)
-        
-#         with open(json_file_path, 'w') as file:
-#             json.dump(data, file, indent=4)
-
-#         flash('VM template generated successfully!', 'success')
-#         return redirect(url_for('index'))
-    
-#     with open(app.config['JSON_FILE_PATH'], 'r') as file:
-#         data = json.load(file)
-#     templates = data.get('templates', [])
-#     print(templates)
-
-#     return render_template('template.html', form=form, templates=templates)
-
-@app.route('/create-instance', methods=['GET', 'POST'])
-def create_instance():
+@app.route('/create/cloud-init', methods=['GET', 'POST'])
+def create_cloud_init():
     form = CloudInitInstanceForm()
-
-    # Carregar templates disponíveis
-    try:
-        with open(app.config['JSON_FILE_PATH'], 'r') as file:
-            data = json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        flash(f'Error loading templates: {str(e)}', 'error')
-        return redirect(url_for('create_instance'))
-    
-    templates = data['templates']
-    form.template.choices = [(t['template_name'], t['template_name']) for t in templates]
-
+    vm_id = request.args.get('vm_id')
+    vm_node = request.args.get('vm_node')
+    print(f"Received vm_id: {vm_id}, vm_node: {vm_node}")
     if form.validate_on_submit():
-        template = next((t for t in templates if t['template_name'] == form.template.data), None)
-        if template:
-            # Gerar um ID único para a nova VM
-            vm_id = generate_unique_vm_id(proxmox)
+        encoded_ssh_key = urllib.parse.quote(form.ssh_key.data.strip())
+        try:
+            config = {
+                'ciuser': form.username.data,
+                'cipassword': form.password.data,
+                'sshkeys': encoded_ssh_key,
+                'ipconfig0': f"ip={form.ip_address.data}/24,gw=192.168.1.1"
+            }
+            print(f"Applying config to vm_id: {vm_id}, vm_node: {vm_node} with config: {config}")
+            proxmox.nodes(vm_node).qemu(vm_id).config.post(**config)
+            flash('Cloud-init configuration applied successfully!', 'success')
+            return redirect(url_for('some_success_page'))  # Redirect to a success page
+        except Exception as e:
+            flash(f'Error applying cloud-init configuration: {str(e)}', 'error')
+    return render_template('createcloudinit.html', form=form, vm_id=vm_id, vm_node=vm_node)
 
-            try:
-                # Clonar o template para criar uma nova VM
-                proxmox.nodes(template['node']).qemu(template['template_id']).clone(
-                    newid=vm_id,
-                    name=form.hostname.data
-                )
 
-                # Configurar Cloud-Init
-                proxmox.nodes(template['node']).qemu(vm_id).config.set(
-                    ciuser=form.username.data,
-                    cipassword=form.password.data,
-                    sshkeys=form.ssh_key.data,
-                    ipconfig0=f"ip={form.ip_address.data}/24,gw=192.168.1.1"
-                )
-
-                # Iniciar a VM
-                proxmox.nodes(template['node']).qemu(vm_id).status.start.post()
-
-                flash('Cloud-init instance created successfully!', 'success')
-                return redirect(url_for('index'))
-            except Exception as e:
-                flash(f'Error creating instance: {str(e)}', 'error')
-
-    return render_template('createinstance.html', form=form)
-
-def configure_cloud_init(proxmox, node, vm_id, username, password, ssh_key, ip_address):
-    try:
-        # Configurar Cloud-Init
-        proxmox.nodes(node).qemu(vm_id).config.set(
-            ciuser=username,
-            cipassword=password,
-            sshkeys=ssh_key,
-            ipconfig0=f"ip={ip_address}/24,gw=192.168.1.1"
-        )
-
-        # Reiniciar a VM para aplicar as configurações do Cloud-Init
-        proxmox.nodes(node).qemu(vm_id).status.reboot.post()
-
-        print(f"Cloud-Init configuration applied to VM ID: {vm_id}")
-        return True
-
-    except Exception as e:
-        print(f"Error configuring Cloud-Init: {str(e)}")
-        # Você pode querer registrar este erro em um sistema de logging
-        raise  # Re-lança a exceção para ser tratada pelo chamador

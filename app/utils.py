@@ -84,7 +84,7 @@ def create_vm_from_template(proxmox, node, name, vm_id, template_id):
             'newid': vm_id,
             'name': name,
             'full': 1,  # Full clone
-            'storage': 'local',  # Ajuste conforme necessário
+            'storage': 'local-lvm',  # Ajuste conforme necessário
         }
         node.qemu(template_id).clone.post(**clone_params)
 
@@ -93,10 +93,16 @@ def create_vm_from_template(proxmox, node, name, vm_id, template_id):
 
     except Exception as e:
         print(f"Error creating VM from template: {str(e)}")
-        # Você pode querer registrar este erro em um sistema de logging
-        raise  # Re-lança a exceção para ser tratada pelo chamador
+        raise  
 
-    
+def start_vm(proxmox, node, vm_id):
+    try:
+        proxmox.nodes(node).qemu(vm_id).status.start.post()
+        print(f"VM ID: {vm_id} started successfully")
+        return True
+    except Exception as e:
+        print(f"Error starting VM: {str(e)}")
+
 def get_vm_status(proxmox, node, vm_id):
     try:
         vm_status = proxmox.nodes(node).qemu(vm_id).status.current.get()
