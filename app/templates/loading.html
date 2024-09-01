@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Criando VM{% endblock %}
+{% block content %}
+  <h1>Criando VM...</h1>
+  <p id="status">Inicializando...</p>
+
+  <script>
+    function checkStatus() {
+      fetch('/check_vm_status/{{ vm_node }}/{{ vm_id }}')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('status').textContent = 'Status da VM: ' + data.status;
+          if (data.status === 'running') {
+            // VM está pronta, você pode redirecionar ou atualizar a UI
+            alert('VM criada com sucesso!');
+            window.location.href = '/';  // Redireciona para a página inicial
+          } else {
+            // Verifica novamente em 5 segundos
+            setTimeout(checkStatus, 5000);
+          }
+        })
+        .catch(error => {
+          console.error('Erro:', error);
+          document.getElementById('status').textContent = 'Erro ao verificar status';
+        });
+    }
+
+    // Inicia a verificação de status
+    checkStatus();
+  </script>
+{% endblock %}

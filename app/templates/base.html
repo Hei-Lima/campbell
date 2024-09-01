@@ -12,7 +12,7 @@
       <div class="navbar bg-base-100">
         <div class="navbar-start">
           <div class="dropdown">
-            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-5 w-5"
@@ -23,25 +23,40 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M4 6h16M4 12h8m-8 6h16" />
+                  d="M4 6h16M4 12h16M4 18h7" />
               </svg>
             </div>
             <ul
               tabindex="0"
               class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-              <li><a href="{{ url_for('create') }}">Criar VMs</a></li>
-              <li><a>Perfil</a></li>
+              <li><a href="{{ url_for('create') }}">Create VMs</a></li>
+              <li><a>Profile</a></li>
+            </ul>
+            <a href="{{ url_for('index') }}" class="btn btn-ghost text-xl">Campbell</a>
           </div>
-          <a href="{{ url_for('index') }}" class="btn btn-ghost text-xl">Campbell</a>
-        </div>
-        <div class="navbar-center hidden lg:flex">
-          <ul class="menu menu-horizontal px-1">
-            <li><a>Criar VMs</a></li>
-            <li><a>Perfil</a></li>
-          </ul>
         </div>
         </div>
       </div>
+      {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div role="alert" class="alert {{ 'alert-error' if category == 'error' else 'alert-success' }}">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
     </header>
     
     <main>

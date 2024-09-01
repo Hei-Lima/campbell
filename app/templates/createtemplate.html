@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Create VMs{% endblock %}
+{% block content %}
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    {% if templates %}
+      <div>
+        {{ form.template_id.label }}
+        {{ form.template_id(class="select select-bordered w-full max-w-xs") }}
+      </div>
+      <div>
+        {{ form.vm_node.label }}
+        {{ form.vm_node(class="select select-bordered w-full max-w-xs") }}
+      </div>
+      <div>
+        {{ form.vm_name.label }}
+        {{ form.vm_name(class="input input-bordered w-full max-w-xs") }}
+      </div>
+      <div>
+        {{ form.vm_id.label }}
+        {{ form.vm_id(class="input input-bordered w-full max-w-xs") }}
+      </div>
+    {% else %}
+      <p>No templates available.</p>
+    {% endif %}
+    <div>
+      {{ form.submit(class="btn btn-primary") }}
+    </div>
+  </form>
+{% endblock %}

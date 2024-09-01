@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Create VM Template{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Your templates:</h1>
+<h1 class="text-2xl font-bold mb-4">Your templates:</h1>
+{% if templates %}
+    <ul class="list-disc list-inside mb-6">
+    {% for template in templates %}
+        <li>{{ template.template_name }} - {{ template.os_type }} ({{ template.cpu_cores }} cores, {{ template.memory }} MB RAM)</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p class="mb-6">No templates created yet.</p>
+{% endif %}
+
+<h1 class="text-2xl font-bold mb-4">Create new template:</h1>
+<form method="POST" action="{{ url_for('template') }}">
+    {{ form.hidden_tag() }}
+    <div class="mb-4">
+        <label for="template_name" class="block stat-title">{{ form.template_name.label }}</label>
+        {{ form.template_name(class="input input-bordered w-full max-w-xs", placeholder="LaLiLuLeLo") }}
+    </div>
+    <div class="mb-4">
+        <label for="cpu_cores" class="block stat-title">{{ form.cpu_cores.label }}</label>
+        {{ form.cpu_cores(class="input input-bordered w-full max-w-xs", placeholder="1") }}
+    </div>
+    <div class="mb-4">
+        <label for="memory" class="block stat-title">{{ form.memory.label }}</label>
+        {{ form.memory(class="input input-bordered w-full max-w-xs", placeholder="512") }}
+    </div>
+    <div class="mb-4">
+        <label for="disk_size" class="block stat-title">{{ form.disk_size.label }}</label>
+        {{ form.disk_size(class="input input-bordered w-full max-w-xs", placeholder="10") }}
+    </div>
+    <div class="mb-4">
+        <label for="network_adapter" class="block stat-title">{{ form.network_adapter.label }}</label>
+        {{ form.network_adapter(class="select select-bordered w-full max-w-xs") }}
+    </div>
+    <div class="mb-4">
+        <label for="os_type" class="block stat-title">{{ form.os_type.label }}</label>
+        {{ form.os_type(class="select select-bordered w-full max-w-xs") }}
+    </div>
+    <div class="mb-4">
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
+</form>
+{% endblock %}
