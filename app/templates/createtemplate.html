@@ -1,30 +1,42 @@
 {% extends "base.html" %}
+
 {% block title %}Create VMs{% endblock %}
+
 {% block content %}
-  <form method="POST">
-    {{ form.hidden_tag() }}
-    {% if templates %}
-      <div>
-        {{ form.template_id.label }}
-        {{ form.template_id(class="select select-bordered w-full max-w-xs") }}
-      </div>
-      <div>
-        {{ form.vm_node.label }}
-        {{ form.vm_node(class="select select-bordered w-full max-w-xs") }}
-      </div>
-      <div>
-        {{ form.vm_name.label }}
-        {{ form.vm_name(class="input input-bordered w-full max-w-xs") }}
-      </div>
-      <div>
-        {{ form.vm_id.label }}
-        {{ form.vm_id(class="input input-bordered w-full max-w-xs") }}
-      </div>
-    {% else %}
-      <p>No templates available.</p>
-    {% endif %}
-    <div>
-      {{ form.submit(class="btn btn-primary") }}
+<div class="flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="card bg-base-200 shadow-xl w-full max-w-4xl">
+        <div class="card-body">
+            <!-- Page Title -->
+            <h1 class="text-3xl font-bold mb-6 text-center">Create VMs</h1>
+
+            <!-- Form -->
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                {% if templates %}
+                    <div class="mb-4">
+                        {{ form.template_id.label(class="block text-sm font-medium text-700") }}
+                        {{ form.template_id(class="select select-bordered w-full mt-1") }}
+                    </div>
+                    <div class="mb-4">
+                        {{ form.vm_node.label(class="block text-sm font-medium text-700") }}
+                        {{ form.vm_node(class="select select-bordered w-full mt-1") }}
+                    </div>
+                    <div class="mb-4">
+                        {{ form.vm_name.label(class="block text-sm font-medium text-700") }}
+                        {{ form.vm_name(class="input input-bordered w-full mt-1") }}
+                    </div>
+                    <div class="mb-4">
+                        {{ form.vm_id.label(class="block text-sm font-medium text-700") }}
+                        {{ form.vm_id(class="input input-bordered w-full mt-1") }}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 mt-4 text-center">No templates available.</p>
+                {% endif %}
+                <div class="mt-6">
+                    {{ form.submit(class="btn btn-primary w-full") }}
+                </div>
+            </form>
+        </div>
     </div>
-  </form>
+</div>
 {% endblock %}

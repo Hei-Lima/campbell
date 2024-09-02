@@ -1,79 +1,92 @@
 {% extends "base.html" %}
 {% block title %}Creating VM{% endblock %}
 {% block content %}
-  <h1>Creating VM, please wait...</h1>
-  <span class="loading loading-spinner text-primary"></span><br>
+<div class="flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="card bg-base-200 shadow-xl w-full max-w-4xl">
+        <div class="card-body">
+            <!-- Page Title -->
+            <h1 id="creatingMessage" class="text-3xl font-bold mb-6 text-center">Creating VM, please wait...</h1>
+            <div class="flex justify-center mb-6">
+                <span class="loading loading-ring text-primary w-40 max-w-4xl"></span>
+            </div>
+            <!-- Status Message -->
+            <p id="status" class="text-center text-gray-700" style="display: none;">Starting...</p>
 
-  <p id="status" style="display: none;">Starting...</p>
-  <button class="btn btn-primary" id="startButton" style="display: none;" onclick="startVm()">Iniciar VM</button>
+            <!-- Start Button -->
+            <div class="flex justify-center mt-4">
+                <button class="btn btn-primary" id="startButton" style="display: none;" onclick="startVm()">Iniciar VM</button>
+            </div>
 
-  <div id="buttons" style="display: none;">
-      <button class="btn btn-primary" id="cloudInitButton">Configurar Cloud-Init</button>
-      <button class="btn btn-secondary" id="mainMenuButton">Menu Principal</button>
-  </div>
-  
-  <script>
-      function checkStatus() {
-          fetch('/check_vm_status/{{ vm_node }}/{{ vm_id }}')
-          .then(response => response.json())
-          .then(data => {
-              document.getElementById('status').textContent = 'VM Status: ' + data.status;
-              if (data.status === 'running') {
-                  // VM está pronta, exibe os botões
-                  alert('VM criada com sucesso!');
-                  document.getElementById('status').style.display = 'block';
-                  document.getElementById('buttons').style.display = 'block';
-                  document.getElementById('cloudInitButton').onclick = function() {
-                      window.location.href = '{{ url_for("create_cloud_init", vm_id=vm_id, vm_node=vm_node) }}';
-                  };
-                  document.getElementById('mainMenuButton').onclick = function() {
-                      window.location.href = '/';
-                  };
-              } else {
-                  // Verifica novamente em 5 segundos
-                  setTimeout(checkStatus, 5000);
-              }
-          })
-          .catch(error => {
-              console.error('Erro:', error);
-              document.getElementById('status').textContent = 'Erro ao verificar status';
-              document.getElementById('status').style.display = 'block';
-          });
-      }
-  
-      // Inicia a verificação de status
-      checkStatus();
-  </script>
+            <!-- Action Buttons -->
+            <div id="buttons" class="flex justify-center mt-4 space-x-4" style="display: none;">
+                <button class="btn btn-primary" id="cloudInitButton">Configurar Cloud-Init</button>
+                <button class="btn btn-secondary" id="mainMenuButton">Menu Principal</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-  <script>
-      function startVm() {
-          fetch('/start_vm/{{ vm_node }}/{{ vm_id }}')
-          .then(response => response.json())
-          .then(data => {
-              document.getElementById('status').textContent = 'Status da VM: ' + data.status;
-              if (data.status === 'running') {
-                  // VM está pronta, você pode redirecionar ou atualizar a UI
-                  alert('VM criada com sucesso!');
-                  window.location.href = '/';
-              } else {
-                  // Verifica novamente em 5 segundos
-                  setTimeout(checkStatus, 5000);
-              }
-          })
-          .catch(error => {
-              console.error('Erro:', error);
-              document.getElementById('status').textContent = 'Erro ao verificar status';
-          });
-      }
-    
-      function showElements() {
-          setTimeout(() => {
-              document.getElementById('status').style.display = 'block';
-              document.getElementById('startButton').style.display = 'inline-block';
-          }, 15000); // Atraso de 15 segundos
-      }
-    
-      document.addEventListener('DOMContentLoaded', showElements);
-  </script>
+<script>
+    function checkStatus() {
+        fetch('/check_vm_status/{{ vm_node }}/{{ vm_id }}')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('status').textContent = 'VM Status: ' + data.status;
+            if (data.status === 'running') {
+                // VM está pronta, exibe os botões e oculta a mensagem de criação
+                document.getElementById('creatingMessage').style.display = 'none';
+                document.getElementById('status').style.display = 'block';
+                document.getElementById('buttons').style.display = 'flex';
+                document.getElementById('cloudInitButton').onclick = function() {
+                    window.location.href = '{{ url_for("create_cloud_init", vm_id=vm_id, vm_node=vm_node) }}';
+                };
+                document.getElementById('mainMenuButton').onclick = function() {
+                    window.location.href = '/';
+                };
+            } else {
+                // Verifica novamente em 5 segundos
+                setTimeout(checkStatus, 5000);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            document.getElementById('status').textContent = 'Erro ao verificar status';
+            document.getElementById('status').style.display = 'block';
+        });
+    }
 
+    // Inicia a verificação de status
+    checkStatus();
+</script>
+
+<script>
+    function startVm() {
+        fetch('/start_vm/{{ vm_node }}/{{ vm_id }}')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('status').textContent = 'Status da VM: ' + data.status;
+            if (data.status === 'running') {
+                // VM está pronta, você pode redirecionar ou atualizar a UI
+                alert('VM criada com sucesso!');
+                window.location.href = '/';
+            } else {
+                // Verifica novamente em 5 segundos
+                setTimeout(checkStatus, 5000);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            document.getElementById('status').textContent = 'Erro ao verificar status';
+        });
+    }
+
+    function showElements() {
+        setTimeout(() => {
+            document.getElementById('status').style.display = 'block';
+            document.getElementById('startButton').style.display = 'inline-block';
+        }, 15000); // Atraso de 15 segundos
+    }
+
+    document.addEventListener('DOMContentLoaded', showElements);
+</script>
 {% endblock %}

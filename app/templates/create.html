@@ -3,18 +3,28 @@
 {% block title %}Create VMs{% endblock %}
 
 {% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="card bg-base-200 shadow-xl w-full max-w-4xl">
+        <div class="card-body">
 
-<div class="breadcrumbs text-sm">
-  <ul>
-    <li><a href="{{ url_for('create') }}">Select Node</a></li>
-  </ul>
+            <!-- Page Title -->
+            <h1 class="text-3xl font-bold mb-6 text-center">Create VMs</h1>
+
+            <!-- Subheading -->
+            <h2 class="text-xl font-semibold mb-6 text-center">
+                Do you want to create a VM from a:
+            </h2>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <a href="{{ url_for('create_template') }}" class="btn btn-primary w-full text-center">
+                    Existing VM Template
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-neutral w-full text-center">
+                    New Config (not available yet)
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
-
-<h1>Create VMs</h1>
-
-<h1>Do you want to create a VM from a:</h1>
-
-<a href="{{ url_for('create_template') }}" class="btn btn-primary">Existing VM Template</a>
-<a href="{{ url_for('index') }}" class="btn btn-neutral">New Config (not available yet)</a>
-
 {% endblock %}

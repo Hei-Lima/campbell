@@ -1,15 +1,46 @@
 from proxmoxer import ProxmoxAPI
 import logging, time
+from app.config import load_proxmox_config
+import requests
 
 def connect_to_proxmox():
-    proxmox = ProxmoxAPI(
-        '192.168.122.11', 
-        user='root@pam', 
-        password='heitorlindo', 
-        verify_ssl=False, 
-        timeout=15
-    )
-    return proxmox
+    config = load_proxmox_config()
+    if not config:
+        return None
+
+    try:
+        proxmox = ProxmoxAPI(
+            config['host'],
+            user=config['user'],
+            password=config['password'],
+            verify_ssl=False,
+            timeout=15
+        )
+        # Test the connection
+        proxmox.nodes.get()
+        return proxmox
+    except requests.exceptions.SSLError:
+        print("SSL Error: Certificate verification failed. If you're using a self-signed certificate, you may need to disable SSL verification.")
+    except Exception as e:
+        print(config)
+        print(f"Error connecting to Proxmox: {str(e)}")
+    return None
+
+def list_vms_notemplate(proxmox):
+    nodes = proxmox.nodes.get()
+    vms_info = []
+    for node in nodes:
+        vms = proxmox.nodes(node['node']).qemu.get()
+        for vm in vms:
+                vm_info = {
+                    'vmid': vm['vmid'],
+                    'name': vm.get('name', f"VM {vm['vmid']}"),
+                    'node': node['node'],
+                    'status': vm.get('status'),
+                    'config': proxmox.nodes(node['node']).qemu(vm['vmid']).config.get()
+                }
+                vms_info.append(vm_info)
+    return (vm for vm in vms_info if vm['config'].get('template') != 1)
 
 def list_vms_node(proxmox):
     nodes = proxmox.nodes.get()
@@ -61,10 +92,13 @@ def list_templates(proxmox):
         vms = proxmox.nodes(node_data['node']).qemu.get()
         for vm in vms:
             if vm.get('template') == 1:
+                # Buscando a configuração da VM/template
+                config = proxmox.nodes(node_data['node']).qemu(vm['vmid']).config.get()
                 template_info = {
                     'vmid': vm['vmid'],
                     'name': vm.get('name', f"Template {vm['vmid']}"),
-                    'node': node_data['node']
+                    'node': node_data['node'],
+                    'config': config
                 }
                 templates.append(template_info)
     return templates
@@ -128,3 +162,8 @@ def configure_cloud_init(proxmox, node, vm_id, username, password, ssh_key, ip_a
         print(f"Error configuring Cloud-Init: {str(e)}")
         # Você pode querer registrar este erro em um sistema de logging
         raise  # Re-lança a exceção para ser tratada pelo chamador
+
+# def check_auth():
+#     if 'logged_in' not in session:
+#         flash('Please log in to access this page', 'error')
+#         return redirect(url_for('login'))

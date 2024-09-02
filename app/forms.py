@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SubmitField, SelectField, FloatField, TextAreaField, PasswordField
-from wtforms.validators import DataRequired, NumberRange
+from wtforms.validators import DataRequired, NumberRange, EqualTo
 
 # class VMTemplateForm(FlaskForm):
 #     template_name = StringField('Template Name', validators=[DataRequired()])
@@ -42,3 +42,21 @@ class CloudInitInstanceForm(FlaskForm):
     ssh_key = TextAreaField('SSH Key', validators=[DataRequired()])
     ip_address = StringField('IP Address', validators=[DataRequired()])
     submit = SubmitField('Create VM')
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
+class RegisterForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Register')
+
+class ProxmoxConfigForm(FlaskForm):
+    host = StringField('Proxmox Host', validators=[DataRequired()])
+    user = StringField('Proxmox User', validators=[DataRequired()])
+    password = PasswordField('Proxmox Password', validators=[DataRequired()])
+    login_method = SelectField('Login Method', choices=["pam", "pve"], validators=[DataRequired()])
+    submit = SubmitField('Save Configuration')

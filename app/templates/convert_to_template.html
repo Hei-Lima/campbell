@@ -3,17 +3,25 @@
 {% block title %}Convert to Template{% endblock %}
 
 {% block content %}
-<h1>Convert VM to Template</h1>
-
-<form action="{{ url_for('convert_to_template') }}" method="post">
-    <label for="vm_id">Select VM:</label>
-    <select name="vm_id" id="vm_id" class="select w-full max-w-xs">
-        <option disabled selected>Pick VM</option>
-        {% for vm in vms %}
-        <option value="{{ vm['vmid'] }}">{{ vm['name'] }} (Node: {{ vm['node'] }})</option>
-        {% endfor %}
-    </select>
-    <button type="submit" class="btn btn-primary">Convert to Template</button>
-</form>
-
+<div class="flex justify-center mt-10">
+    <div class="card w-full max-w-md bg-base-100 shadow-xl p-6">
+        <h1 class="text-2xl font-bold text-center mb-4">Convert VM to Template</h1>
+        <form action="{{ url_for('convert_to_template') }}" method="post" class="space-y-4">
+            <div class="form-control">
+                <label for="vm_id" class="label">
+                    <span class="label-text font-semibold">Select VM:</span>
+                </label>
+                <select name="vm_id" id="vm_id" class="select select-bordered w-full">
+                    <option disabled selected>Pick VM</option>
+                    {% for vm in vms %}
+                    <option value="{{ vm['vmid'] }}">{{ vm['name'] }} (Node: {{ vm['node'] }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-control mt-4">
+                <button type="submit" class="btn btn-primary w-full">Convert to Template</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

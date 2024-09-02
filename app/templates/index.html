@@ -3,35 +3,74 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h1>Welcome to the Home Page!</h1>
-<button class="btn btn-primary">Button</button>
+<div class="flex flex-col items-center justify-center min-h-screen p-4">
+    <h1 class="text-3xl font-bold mb-6 text-center">Welcome to Campbell</h1>
+    <img src="{{ url_for('static', filename='media/logo.svg') }}" alt="Logo" class="w-32 h-32 mb-4">
 
-{% if vms %}
-<div class="overflow-x-auto">
-  <table class="table">
-    <!-- head -->
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for vm in vms %}
-      <tr>
-        <th>{{ vm.name }}</th>
-        {% if vm.status == "running" %}
-        <td class="text-success">{{ vm.status }}</td>
-        {% else %}
-        <td class="text-warning">{{ vm.status }}</td>
-        {% endif %}
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+
+        <!-- Card for VMS -->
+        <div class="card bg-base-200 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title text-2xl text-center mb-4">Your Current VMS</h2>
+                {% if vms %}
+                <div class="overflow-x-auto">
+                    <table class="table w-full text-center">
+                        <!-- head -->
+                        <thead>
+                            <tr>
+                                <th class="text-left">Name</th>
+                                <th class="text-left">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for vm in vms %}
+                            <tr>
+                                <td class="font-semibold">{{ vm.name }}</td>
+                                {% if vm.status == "running" %}
+                                <td class="text-success">{{ vm.status }}</td>
+                                {% else %}
+                                <td class="text-warning">{{ vm.status }}</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-gray-500 mt-4 text-center">No virtual machines found.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Card for Templates -->
+        <div class="card bg-base-200 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title text-2xl text-center mb-4">Your Current Templates</h2>
+                {% if templates %}
+                <div class="overflow-x-auto">
+                    <table class="table w-full text-center">
+                        <!-- head -->
+                        <thead>
+                            <tr>
+                                <th class="text-left">Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for template in templates %}
+                            <tr>
+                                <td class="font-semibold">{{ template.name }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-gray-500 mt-4 text-center">No templates found.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
 </div>
-{% else %}
-    <p>No virtual machines found.</p>
-{% endif %}
-
 {% endblock %}

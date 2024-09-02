@@ -1,21 +1,81 @@
-from flask import render_template, url_for, request, jsonify, flash, redirect, current_app as app
+from flask import render_template, url_for, request, jsonify, flash, redirect, session, current_app as app
 from app.utils import *
-from app.forms import TemplateForm, CloudInitInstanceForm
+from app.forms import TemplateForm, CloudInitInstanceForm, RegisterForm, LoginForm, ProxmoxConfigForm
+from app.auth import *
+from app.config import save_proxmox_config, load_proxmox_config
 import os, json, subprocess
 import urllib.parse
 
 proxmox = connect_to_proxmox()
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        if authenticate(username, password):
+            session['logged_in'] = True
+            session['username'] = username
+            flash('Login successful!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid credentials.', 'error')
+    return render_template('login.html', form=form)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        save_user(username, password)
+        flash('User registered successfully!', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', form=form)
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    session.pop('username', None)
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('login'))
+
+@app.route('/proxmox_config', methods=['GET', 'POST'])
+def proxmox_config():
+    if 'logged_in' not in session:
+        flash('Please log in to access this page', 'error')
+        return redirect(url_for('login'))
+
+    form = ProxmoxConfigForm()
+    if form.validate_on_submit():
+        save_proxmox_config(form.host.data, form.user.data, form.password.data, form.login_method.data)
+        global proxmox
+        proxmox = connect_to_proxmox()
+        if proxmox:
+            flash('Proxmox configuration saved and connected successfully!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Proxmox configuration saved but connection failed. Please check your settings.', 'error')
+
+    config = load_proxmox_config()
+    if config:
+        form.host.data = config['host']
+        form.user.data = config['user']
+    
+    return render_template('proxmox_config.html', form=form)
+
 @app.route('/')
 def index():
-    vms = list_vms(proxmox)
-    print(vms)
-    return render_template('index.html', vms=vms)
-
-@app.route('/login')
-def login():
-    return render_template('login.html')
-
+    if 'logged_in' not in session:
+        flash('Please log in to access this page', 'error')
+        return redirect(url_for('hero'))
+    if proxmox is None:
+        flash('Proxmox is not configured. Please set up the configuration.', 'warning')
+        return redirect(url_for('proxmox_config'))
+    vms = list_vms_notemplate(proxmox)
+    templates = list_templates(proxmox)
+    return render_template('index.html', vms=vms, templates=templates)
 @app.route('/create')
 def create():
     return render_template('create.html')
@@ -119,6 +179,36 @@ def create_cloud_init():
 
 # HERO PAGE E LOGINS:
 
-@app.route('hero')
+@app.route('/hero')
 def hero():
     return render_template('hero.html')
+
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     form = LoginForm()
+#     if request.method == 'POST':
+#         username = request.form.get('username')
+#         password = request.form.get('password')
+        
+#         if authenticate(username, password):
+#             flash('Login successful!', 'success')
+#             return redirect(url_for('index'))
+#         else:
+#             flash('Invalid credentials.', 'error')
+    
+#     return render_template('login.html', form=form)
+
+# @app.route('/register', methods=['GET', 'POST'])
+# def register():
+#     form = RegisterForm()
+#     if request.method == 'POST':
+#         username = request.form.get('username')
+#         password = request.form.get('password')
+#         if not form.validate_on_submit():
+#             flash('Invalid form data.', 'error')
+#             return redirect(url_for('register'))
+#         save_user(username, password)
+#         flash('User registered successfully!', 'success')
+#         return redirect(url_for('login'))
+    
+#     return render_template('register.html', form=form)
