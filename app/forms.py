@@ -60,3 +60,6 @@ class ProxmoxConfigForm(FlaskForm):
     password = PasswordField('Proxmox Password', validators=[DataRequired()])
     login_method = SelectField('Login Method', choices=["pam", "pve"], validators=[DataRequired()])
     submit = SubmitField('Save Configuration')
+
+class ConvertToTemplateForm(FlaskForm):
+    pass

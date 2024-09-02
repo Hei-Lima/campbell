@@ -1,10 +1,12 @@
 from flask import render_template, url_for, request, jsonify, flash, redirect, session, current_app as app
 from app.utils import *
-from app.forms import TemplateForm, CloudInitInstanceForm, RegisterForm, LoginForm, ProxmoxConfigForm
+from app.forms import TemplateForm, CloudInitInstanceForm, RegisterForm, LoginForm, ProxmoxConfigForm, ConvertToTemplateForm
 from app.auth import *
 from app.config import save_proxmox_config, load_proxmox_config
 import os, json, subprocess
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, quote
+import traceback
+import base64
 
 proxmox = connect_to_proxmox()
 
@@ -133,6 +135,7 @@ def start_vm_route(vm_node, vm_id):
 
 @app.route('/convert-to-template', methods=['GET', 'POST'])
 def convert_to_template():
+    form = ConvertToTemplateForm()
     if request.method == 'POST':
         vm_id = request.form.get('vm_id')
         if vm_id:
@@ -152,7 +155,7 @@ def convert_to_template():
                     flash(f'Error converting VM to template: {str(e)}', 'error')
 
     vms = list_vms_node(proxmox)
-    return render_template('convert_to_template.html', vms=vms)
+    return render_template('convert_to_template.html', vms=vms, form=form)
 
 @app.route('/create/cloud-init', methods=['GET', 'POST'])
 def create_cloud_init():
@@ -161,13 +164,14 @@ def create_cloud_init():
     vm_node = request.args.get('vm_node')
     print(f"Received vm_id: {vm_id}, vm_node: {vm_node}")
     if form.validate_on_submit():
-        # Remove caracteres de nova linha e espaços extras
-        ssh_key = form.ssh_key.data.replace('\n', '').replace('\r', '').strip()
+        ssh_key = form.ssh_key.data.strip()
+        print(f"SSH Key: {ssh_key}")
+        ssh_key = form.ssh_key.data.replace('\n', '').replace('\r', '').strip()  # Remover \n e \r explicitamente
         try:
             config = {
                 'ciuser': form.username.data,
                 'cipassword': form.password.data,
-                'sshkeys': ssh_key,  # Use a chave SSH diretamente, sem codificação URL
+                'sshkeys': ssh_key,  # Use a chave SSH diretamente, sem novas linhas
                 'ipconfig0': f"ip={form.ip_address.data}/24,gw=192.168.1.1"
             }
             print(f"Applying config to vm_id: {vm_id}, vm_node: {vm_node} with config: {config}")

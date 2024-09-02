@@ -2,6 +2,7 @@ from proxmoxer import ProxmoxAPI
 import logging, time
 from app.config import load_proxmox_config
 import requests
+from urllib.parse import quote
 
 def connect_to_proxmox():
     config = load_proxmox_config()
@@ -180,3 +181,17 @@ def get_vm_info(proxmox, node, vm_id):
         return vm_info
     else:
         return None
+    
+def format_ssh_key(ssh_key):
+    # Remove todos os espaços em branco e quebras de linha
+    ssh_key = ''.join(ssh_key.split())
+    
+    # Garante que a chave está no formato correto
+    parts = ssh_key.split('AAAAB3NzaC1yc2E')
+    if len(parts) == 2:
+        return f"ssh-rsa AAAAB3NzaC1yc2E{parts[1]}"
+    return ssh_key
+
+def encode_ssh_key(ssh_key):
+    # Codifica a chave SSH e substitui '+' por '%20'
+    return quote(ssh_key).replace('+', '%20')
