@@ -37,6 +37,7 @@ def list_vms_notemplate(proxmox):
                     'name': vm.get('name', f"VM {vm['vmid']}"),
                     'node': node['node'],
                     'status': vm.get('status'),
+                    'id': vm.get('id'),
                     'config': proxmox.nodes(node['node']).qemu(vm['vmid']).config.get()
                 }
                 vms_info.append(vm_info)
@@ -160,10 +161,22 @@ def configure_cloud_init(proxmox, node, vm_id, username, password, ssh_key, ip_a
 
     except Exception as e:
         print(f"Error configuring Cloud-Init: {str(e)}")
-        # Você pode querer registrar este erro em um sistema de logging
-        raise  # Re-lança a exceção para ser tratada pelo chamador
+        raise 
 
-# def check_auth():
-#     if 'logged_in' not in session:
-#         flash('Please log in to access this page', 'error')
-#         return redirect(url_for('login'))
+def get_vm_info(proxmox, node, vm_id):
+    vm_config = proxmox.nodes(node).qemu(vm_id).config.get()
+
+    if vm_config.get('template') != 1:
+        vm_info = {
+            'vmid': vm_id,
+            'name': vm_config.get('name', f"VM {vm_id}"),
+            'node': node,
+            'status': proxmox.nodes(node).qemu(vm_id).status.current.get().get('status'),
+            'cores': vm_config.get('cores'),
+            'memory': vm_config.get('memory'),
+            'disk': vm_config.get('disks', [{}])[0].get('size'),
+            'os': vm_config.get('ostype', 'Unknown OS')
+        }
+        return vm_info
+    else:
+        return None

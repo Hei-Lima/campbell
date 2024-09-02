@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}VM {{ vm.name }}{% endblock %}
+
+{% block content %}
+
+<div class="container mx-auto mt-8">
+    <h1 class="text-2xl font-bold mb-4 text-center">VM: {{ vm.name }}</h1>
+
+    <!-- General Information -->
+    <div class="text-center mb-8">
+        <h2 class="text-xl font-semibold mb-2">General Information</h2>
+        <p><strong>VM ID:</strong> {{ vm.vmid }}</p>
+        <p><strong>Node:</strong> {{ vm.node }}</p>
+        <p><strong>Status:</strong> {{ vm.status }}</p>
+    </div>
+
+    <!-- Grid container for the cards and spinner -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+
+        <!-- Configuration Card -->
+        <div class="card bg-base-200 shadow-xl p-4 rounded-lg md:col-span-2">
+            <div class="card-body">
+                <h2 class="text-xl font-semibold mb-4">Configuration</h2>
+                <ul class="list-disc list-inside">
+                    <li><strong>CPU Cores:</strong> {{ vm.cores }}</li>
+                    <li><strong>Memory:</strong> {{ vm.memory }} MB</li>
+                    <li><strong>Disk Size:</strong> {{ vm.disk }} GB</li>
+                    <li><strong>Operating System:</strong> {{ vm.os }}</li>
+                </ul> 
+            </div>
+        </div>
+
+        <!-- Spinner -->
+        <div class="flex justify-center items-center md:col-span-1">
+            {% if vm.status == "running" %}
+            <span id="loadingSpinner" class="loading loading-ring w-60 text-success"></span>
+            {% else %}
+            <span id="loadingSpinner" class="loading loading-ring w-60 text-warning"></span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-center mt-6 space-x-4">
+        <a href="{{ url_for('stop', vm_node=vm.node, vm_id=vm.vmid) }}" class="btn btn-warning">Stop VM</a>
+        <a href="{{ url_for('delete', vm_node=vm.node, vm_id=vm.vmid) }}" class="btn btn-error">Remove VM</a>
+        <a href="{{ url_for('start_vm_route', vm_node=vm.node, vm_id=vm.vmid) }}" class="btn btn-success">Start VM</a>
+    </div>
+</div>
+
+{% endblock %}

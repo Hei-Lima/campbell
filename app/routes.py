@@ -4,7 +4,7 @@ from app.forms import TemplateForm, CloudInitInstanceForm, RegisterForm, LoginFo
 from app.auth import *
 from app.config import save_proxmox_config, load_proxmox_config
 import os, json, subprocess
-import urllib.parse
+from urllib.parse import quote_plus
 
 proxmox = connect_to_proxmox()
 
@@ -76,6 +76,7 @@ def index():
     vms = list_vms_notemplate(proxmox)
     templates = list_templates(proxmox)
     return render_template('index.html', vms=vms, templates=templates)
+
 @app.route('/create')
 def create():
     return render_template('create.html')
@@ -160,12 +161,13 @@ def create_cloud_init():
     vm_node = request.args.get('vm_node')
     print(f"Received vm_id: {vm_id}, vm_node: {vm_node}")
     if form.validate_on_submit():
-        encoded_ssh_key = urllib.parse.quote(form.ssh_key.data.strip())
+        # Remove caracteres de nova linha e espaços extras
+        ssh_key = form.ssh_key.data.replace('\n', '').replace('\r', '').strip()
         try:
             config = {
                 'ciuser': form.username.data,
                 'cipassword': form.password.data,
-                'sshkeys': encoded_ssh_key,
+                'sshkeys': ssh_key,  # Use a chave SSH diretamente, sem codificação URL
                 'ipconfig0': f"ip={form.ip_address.data}/24,gw=192.168.1.1"
             }
             print(f"Applying config to vm_id: {vm_id}, vm_node: {vm_node} with config: {config}")
@@ -177,38 +179,32 @@ def create_cloud_init():
     return render_template('createcloudinit.html', form=form, vm_id=vm_id, vm_node=vm_node)
 
 
+@app.route('/delete/<vm_node>/<vm_id>')
+def delete(vm_node, vm_id):
+    try:
+        proxmox.nodes(vm_node).qemu(vm_id).delete()
+        flash('VM deleted successfully!', 'success')
+    except Exception as e:
+        flash(f'Error deleting VM: {str(e)}', 'error')
+    return redirect(url_for('index'))
+
+@app.route('/stop/<vm_node>/<vm_id>')
+def stop(vm_node, vm_id):
+    try:
+        proxmox.nodes(vm_node).qemu(vm_id).status.stop.post()
+        flash('VM stopped successfully!', 'success')
+    except Exception as e:
+        flash(f'Error stopping VM: {str(e)}', 'error')
+    return redirect(url_for('index'))
+
+@app.route('/vm/<vm_node>/<vm_id>')
+def vm(vm_node, vm_id):
+    vm = get_vm_info(proxmox, vm_node, vm_id)
+    return render_template('vm.html', vm=vm)
+
 # HERO PAGE E LOGINS:
 
 @app.route('/hero')
 def hero():
     return render_template('hero.html')
 
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     form = LoginForm()
-#     if request.method == 'POST':
-#         username = request.form.get('username')
-#         password = request.form.get('password')
-        
-#         if authenticate(username, password):
-#             flash('Login successful!', 'success')
-#             return redirect(url_for('index'))
-#         else:
-#             flash('Invalid credentials.', 'error')
-    
-#     return render_template('login.html', form=form)
-
-# @app.route('/register', methods=['GET', 'POST'])
-# def register():
-#     form = RegisterForm()
-#     if request.method == 'POST':
-#         username = request.form.get('username')
-#         password = request.form.get('password')
-#         if not form.validate_on_submit():
-#             flash('Invalid form data.', 'error')
-#             return redirect(url_for('register'))
-#         save_user(username, password)
-#         flash('User registered successfully!', 'success')
-#         return redirect(url_for('login'))
-    
-#     return render_template('register.html', form=form)

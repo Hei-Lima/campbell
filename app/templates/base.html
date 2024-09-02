@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Campbell{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='media/logo.png') }}">    <title>{% block title %}Campbell{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -30,7 +29,8 @@
               tabindex="0"
               class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
               <li><a href="{{ url_for('create') }}">Create VMs</a></li>
-              <li><a>Profile</a></li>
+              <li><a href="{{ url_for('logout')}}">Logout</a></li>
+              <li><a href="{{ url_for('convert_to_template')}}">Convert Template</a></li>
             </ul>
             <a href="{{ url_for('index') }}" class="btn btn-ghost text-xl">Campbell</a>
           </div>

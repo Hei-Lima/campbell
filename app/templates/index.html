@@ -26,7 +26,7 @@
                         <tbody>
                         {% for vm in vms %}
                             <tr>
-                                <td class="font-semibold">{{ vm.name }}</td>
+                                <td class="font-semibold"><a href="{{ url_for('vm', vm_node=vm.node, vm_id=vm.vmid) }}">{{ vm.name }}</a></td>
                                 {% if vm.status == "running" %}
                                 <td class="text-success">{{ vm.status }}</td>
                                 {% else %}
