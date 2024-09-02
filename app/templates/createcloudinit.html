@@ -1,28 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Create Cloud-Init Instance{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-bold mb-4">Create new Cloud-Init instance:</h1>
-<h1>Create Cloud-Init Configuration for VM {{ vm_id }}</h1>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    <div>
-        {{ form.username.label }}
-        {{ form.username(class="input input-bordered w-full max-w-xs") }}
+<div class="flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="card bg-base-200 shadow-xl w-full max-w-4xl">
+        <div class="card-body">
+            <!-- Page Title -->
+            <h1 class="text-3xl font-bold mb-6 text-center">Configure Cloud-Init:</h1>
+            <h2 class="text-xl mb-4 text-center">Create Cloud-Init Configuration for VM {{ vm_id }}</h2>
+
+            <!-- Form -->
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="mb-4">
+                    {{ form.username.label(class="block text-sm font-medium text-700") }}
+                    {{ form.username(class="input input-bordered w-full") }}
+                </div>
+                <div class="mb-4">
+                    {{ form.password.label(class="block text-sm font-medium text-700") }}
+                    {{ form.password(class="input input-bordered w-full") }}
+                </div>
+                <div class="mb-4">
+                    {{ form.ssh_key.label(class="block text-sm font-medium text-700") }}
+                    {{ form.ssh_key(class="textarea textarea-bordered w-full", rows=10, cols=40) }}
+                </div>
+                <div class="mb-4">
+                    {{ form.ip_address.label(class="block text-sm font-medium text-700") }}
+                    {{ form.ip_address(class="input input-bordered w-full") }}
+                </div>
+                <div class="mt-6">
+                    {{ form.submit(class="btn btn-primary w-full") }}
+                </div>
+            </form>
+        </div>
     </div>
-    <div>
-        {{ form.password.label }}
-        {{ form.password(class="input input-bordered w-full max-w-xs") }}
-    </div>
-    <div>
-        {{ form.ssh_key.label }}
-        {{ form.ssh_key(class="textarea textarea-bordered w-full max-w-xs", rows=10, cols=40) }}
-    </div>
-    <div>
-        {{ form.ip_address.label }}
-        {{ form.ip_address(class="input input-bordered w-full max-w-xs") }}
-    </div>
-    <div>
-        {{ form.submit(class="btn btn-primary") }}
-    </div>
-</form>
+</div>
 {% endblock %}

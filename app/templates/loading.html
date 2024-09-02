@@ -7,7 +7,7 @@
             <!-- Page Title -->
             <h1 id="creatingMessage" class="text-3xl font-bold mb-6 text-center">Creating VM, please wait...</h1>
             <div class="flex justify-center mb-6">
-                <span class="loading loading-ring text-primary w-40 max-w-4xl"></span>
+                <span id="loadingSpinner" class="loading loading-ring w-40 max-w-4xl"></span>
             </div>
             <!-- Status Message -->
             <p id="status" class="text-center text-gray-700" style="display: none;">Starting...</p>
@@ -19,8 +19,8 @@
 
             <!-- Action Buttons -->
             <div id="buttons" class="flex justify-center mt-4 space-x-4" style="display: none;">
-                <button class="btn btn-primary" id="cloudInitButton">Configurar Cloud-Init</button>
-                <button class="btn btn-secondary" id="mainMenuButton">Menu Principal</button>
+                <button class="btn btn-outline btn-primary" id="cloudInitButton">Configurar Cloud-Init</button>
+                <button class="btn btn-outline btn-secondary" id="mainMenuButton">Menu Principal</button>
             </div>
         </div>
     </div>
@@ -33,16 +33,10 @@
         .then(data => {
             document.getElementById('status').textContent = 'VM Status: ' + data.status;
             if (data.status === 'running') {
-                // VM está pronta, exibe os botões e oculta a mensagem de criação
                 document.getElementById('creatingMessage').style.display = 'none';
                 document.getElementById('status').style.display = 'block';
+                document.getElementById('loadingSpinner').classList.add('text-success');
                 document.getElementById('buttons').style.display = 'flex';
-                document.getElementById('cloudInitButton').onclick = function() {
-                    window.location.href = '{{ url_for("create_cloud_init", vm_id=vm_id, vm_node=vm_node) }}';
-                };
-                document.getElementById('mainMenuButton').onclick = function() {
-                    window.location.href = '/';
-                };
             } else {
                 // Verifica novamente em 5 segundos
                 setTimeout(checkStatus, 5000);
@@ -55,22 +49,15 @@
         });
     }
 
-    // Inicia a verificação de status
-    checkStatus();
-</script>
-
-<script>
     function startVm() {
         fetch('/start_vm/{{ vm_node }}/{{ vm_id }}')
         .then(response => response.json())
         .then(data => {
             document.getElementById('status').textContent = 'Status da VM: ' + data.status;
             if (data.status === 'running') {
-                // VM está pronta, você pode redirecionar ou atualizar a UI
                 alert('VM criada com sucesso!');
                 window.location.href = '/';
             } else {
-                // Verifica novamente em 5 segundos
                 setTimeout(checkStatus, 5000);
             }
         })
@@ -84,9 +71,27 @@
         setTimeout(() => {
             document.getElementById('status').style.display = 'block';
             document.getElementById('startButton').style.display = 'inline-block';
-        }, 15000); // Atraso de 15 segundos
+        }, 15000);
     }
 
-    document.addEventListener('DOMContentLoaded', showElements);
+    // Configura o botão de Cloud-Init e o botão do menu principal após o DOM estar carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        const vmId = {{ vm_id | tojson }};
+        const vmNode = {{ vm_node | tojson }};
+
+        document.getElementById('cloudInitButton').onclick = function() {
+            const url = `/create/cloud-init?vm_id=${encodeURIComponent(vmId)}&vm_node=${encodeURIComponent(vmNode)}`;
+            window.location.href = url;
+        };
+
+        document.getElementById('mainMenuButton').onclick = function() {
+            window.location.href = '/';
+        };
+
+        showElements(); // Exibe elementos após o atraso
+    });
+
+    // Inicia a verificação de status
+    checkStatus();
 </script>
 {% endblock %}

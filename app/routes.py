@@ -171,7 +171,7 @@ def create_cloud_init():
             print(f"Applying config to vm_id: {vm_id}, vm_node: {vm_node} with config: {config}")
             proxmox.nodes(vm_node).qemu(vm_id).config.post(**config)
             flash('Cloud-init configuration applied successfully!', 'success')
-            return redirect(url_for('some_success_page'))  # Redirect to a success page
+            return redirect(url_for('index'))
         except Exception as e:
             flash(f'Error applying cloud-init configuration: {str(e)}', 'error')
     return render_template('createcloudinit.html', form=form, vm_id=vm_id, vm_node=vm_node)
