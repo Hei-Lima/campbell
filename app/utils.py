@@ -17,7 +17,6 @@ def connect_to_proxmox():
             verify_ssl=False,
             timeout=15
         )
-        # Test the connection
         proxmox.nodes.get()
         return proxmox
     except requests.exceptions.SSLError:
@@ -94,7 +93,6 @@ def list_templates(proxmox):
         vms = proxmox.nodes(node_data['node']).qemu.get()
         for vm in vms:
             if vm.get('template') == 1:
-                # Buscando a configuração da VM/template
                 config = proxmox.nodes(node_data['node']).qemu(vm['vmid']).config.get()
                 template_info = {
                     'vmid': vm['vmid'],
@@ -120,7 +118,7 @@ def create_vm_from_template(proxmox, node, name, vm_id, template_id):
             'newid': vm_id,
             'name': name,
             'full': 1,  # Full clone
-            'storage': 'local-lvm',  # Ajuste conforme necessário
+            'storage': 'local-lvm',  # Storage name (TODO- Trocar isso)
         }
         node.qemu(template_id).clone.post(**clone_params)
 
@@ -183,15 +181,12 @@ def get_vm_info(proxmox, node, vm_id):
         return None
     
 def format_ssh_key(ssh_key):
-    # Remove todos os espaços em branco e quebras de linha
     ssh_key = ''.join(ssh_key.split())
     
-    # Garante que a chave está no formato correto
     parts = ssh_key.split('AAAAB3NzaC1yc2E')
     if len(parts) == 2:
         return f"ssh-rsa AAAAB3NzaC1yc2E{parts[1]}"
     return ssh_key
 
 def encode_ssh_key(ssh_key):
-    # Codifica a chave SSH e substitui '+' por '%20'
     return quote(ssh_key).replace('+', '%20')

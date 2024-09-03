@@ -106,10 +106,8 @@ def create_template():
         vm_id = form.vm_id.data
         
         try:
-            # Criar a VM de forma síncrona
             create_vm_from_template(proxmox, vm_node, vm_name, vm_id, template_id)
             
-            # Redirecionar para a página de carregamento
             return redirect(url_for('loading', vm_id=vm_id, vm_node=vm_node))
         except Exception as e:
             flash(f'Error creating VM: {str(e)}', 'error')
@@ -166,12 +164,12 @@ def create_cloud_init():
     if form.validate_on_submit():
         ssh_key = form.ssh_key.data.strip()
         print(f"SSH Key: {ssh_key}")
-        ssh_key = form.ssh_key.data.replace('\n', '').replace('\r', '').strip()  # Remover \n e \r explicitamente
+        ssh_key = form.ssh_key.data.replace('\n', '').replace('\r', '').strip()  
         try:
             config = {
                 'ciuser': form.username.data,
                 'cipassword': form.password.data,
-                'sshkeys': ssh_key,  # Use a chave SSH diretamente, sem novas linhas
+                'sshkeys': ssh_key,  
                 'ipconfig0': f"ip={form.ip_address.data}/24,gw=192.168.1.1"
             }
             print(f"Applying config to vm_id: {vm_id}, vm_node: {vm_node} with config: {config}")
